@@ -84,3 +84,10 @@ app.post("/urls/:id/delete", (req, res) => {
     res.status(404).send("URL not found");
   }
 });
+
+app.post("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  const newLongURL = req.body.longURL;
+  urlDatabase[id] = newLongURL;
+  res.redirect("/urls");
+});
