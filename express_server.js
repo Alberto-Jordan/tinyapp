@@ -1,11 +1,22 @@
 const express = require("express");
 const app = express();
 const PORT = 8080;
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
+const bcrypt = require("bcryptjs");
+const helpers = require("./helpers");
 
+// Middleware
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: "session",
+  keys: ["key1", "key2"]
+}));
+
+app.use((req, res, next) => {
+  res.locals.user = users[req.session.user_id];
+  next();
+});
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -62,7 +73,8 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const userId = req.cookies.user_id;
+  const userId = req.session.user_id;
+
   const user = getUserById(userId);
   const templateVars = {
     urls: urlDatabase,
@@ -72,7 +84,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const userId = req.cookies.user_id;
+  const userId = req.session.user_id;
   const user = getUserById(userId);
   const templateVars = {
     user: user
@@ -120,7 +132,11 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.render("register");
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.render("register");
+  }
 });
 
 app.post("/register", (req, res) => {
@@ -131,47 +147,51 @@ app.post("/register", (req, res) => {
     return;
   }
 
-  for (const userId in users) {
-    if (users[userId].email === email) {
-      res.status(400).send("Email already registered.");
-      return;
-    }
+  const user = helpers.getUserByEmail(email, users);
+
+  if (user) {
+    res.status(400).send("Email already registered.");
+    return;
   }
 
   const id = generateRandomString();
+  const hashedPassword = bcrypt.hashSync(password, 10);
   const newUser = {
     id,
     email,
-    password,
+    password: hashedPassword,
   };
   users[id] = newUser;
-  res.cookie("user_id", id);
+  req.session.user_id = id;
   res.redirect("/urls");
 });
 
 app.get("/login", (req, res) => {
-  res.render("login");
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.render("login");
+  }
 });
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  const user = getUserByEmail(email);
-  
-  if (!user || user.password !== password) {
+  const user = helpers.getUserByEmail(email);
+
+  if (!user || !bcrypt.compareSync(password, user.password)) {
     res.status(403).send("Invalid credentials");
     return;
   }
-  
-  res.cookie("user_id", user.id);
+
+  req.session.user_id = user.id;
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/login");
 });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
