@@ -176,7 +176,8 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  const user = helpers.getUserByEmail(email);
+  const user = helpers.getUserByEmail(email, users);
+  console.log({user})
 
   if (!user || !bcrypt.compareSync(password, user.password)) {
     res.status(403).send("Invalid credentials");
