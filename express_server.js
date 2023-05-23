@@ -8,21 +8,8 @@ const helpers = require("./helpers");
 // Middleware
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieSession({
-  name: "session",
-  keys: ["key1", "key2"]
-}));
 
-app.use((req, res, next) => {
-  res.locals.user = users[req.session.user_id];
-  next();
-});
-
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
+// Move users object declaration here
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -34,6 +21,21 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk",
   },
+};
+
+app.use(cookieSession({
+  name: "session",
+  keys: ["key1", "key2"]
+}));
+
+app.use((req, res, next) => {
+  res.locals.user = users[req.session.user_id];
+  next();
+});
+
+const urlDatabase = {
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
 };
 
 function generateRandomString() {
@@ -74,18 +76,40 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
-
   const user = getUserById(userId);
+
+  if (!user) {
+    res.status(401).send("You need to be logged in to access this.");
+    return;
+  }
+
+  const userUrls = {};
+
+  for (const urlId in urlDatabase) {
+    if (urlDatabase[urlId].userID === userId) {
+      userUrls[urlId] = {
+        longURL: urlDatabase[urlId].longURL,
+      };
+    }
+  }
+
   const templateVars = {
-    urls: urlDatabase,
+    urls: userUrls,
     user: user,
   };
+
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   const userId = req.session.user_id;
   const user = getUserById(userId);
+
+  if (!user) {
+    res.status(401).send("You need to be logged in to access this.");
+    return;
+  }
+
   const templateVars = {
     user: user
   };
@@ -93,26 +117,53 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
-  res.render("urls_show", templateVars);
-});
+  const id = req.params.id;
+  const longURL = urlDatabase[id] ? urlDatabase[id].longURL : null;
 
-app.post("/urls", (req, res) => {
-  const id = generateRandomString();
-  const longURL = req.body.longURL;
-  urlDatabase[id] = longURL;
-  res.redirect(`/urls/${id}`);
+  if (longURL) {
+    const templateVars = { id: id, longURL: longURL };
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(404).send("URL not found");
+  }
 });
 
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = urlDatabase[shortURL];
+
   if (longURL) {
-    res.redirect(longURL);
+    res.redirect(longURL.longURL);
   } else {
     res.status(404).send("URL not found");
   }
 });
+
+
+app.post("/urls", (req, res) => {
+  const id = generateRandomString();
+  const longURL = req.body.longURL;
+  const userId = req.session.user_id;
+  urlDatabase[id] = { longURL: longURL, userID: userId };
+  res.redirect(`/urls/${id}`);
+});
+
+app.get("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  const url = urlDatabase[id];
+
+  if (url) {
+    const templateVars = {
+      id: id,
+      longURL: url.longURL, 
+    };
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(404).send("URL not found");
+  }
+});
+
+
 
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
@@ -127,7 +178,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
   const newLongURL = req.body.longURL;
-  urlDatabase[id] = newLongURL;
+  urlDatabase[id].longURL = newLongURL;
   res.redirect("/urls");
 });
 
@@ -177,7 +228,6 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const user = helpers.getUserByEmail(email, users);
-  console.log({user})
 
   if (!user || !bcrypt.compareSync(password, user.password)) {
     res.status(403).send("Invalid credentials");
