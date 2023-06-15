@@ -6,6 +6,7 @@ TinyApp is a comprehensive web application developed using Node and Express. It 
 
 !["TinyApp Register"](https://github.com/Alberto-Jordan/tinyapp/blob/master/docs/TinyApp-Register.png)
 !["TinyAPP Login"](https://github.com/Alberto-Jordan/tinyapp/blob/master/docs/TinyApp-Login.png)
+!["TinyApp-URLS-NEW"](https://github.com/Alberto-Jordan/tinyapp/blob/master/docs/TinyApp-URLS-NEW.png)
 !["TinyApp Urls"](https://github.com/Alberto-Jordan/tinyapp/blob/master/docs/TinyApp-Urls.png)
 
 ## Dependencies
