@@ -15,39 +15,70 @@
   <style>
     .container {
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 50vh;
+      height: 70vh;
     }
     .form-container {
       width: 400px;
+      margin-bottom: 20px;
       padding: 20px;
       border: 1px solid #ccc;
       border-radius: 5px;
       background-color: #f9f9f9;
+    }
+    .welcome-text {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .watermark {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      font-size: 14px;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
   <%- include('partials/_header') %>
   <div class="container">
+    <div class="welcome-text">
+      <h2>Welcome to Tiny APP! 👋</h2>
+      <h3>Log in and start sharing</h3>
+    </div>
     <div class="form-container">
-      <h2>Login</h2>
+      <h2 class="text-center">Login Account</h2>
       <% if (error) { %>
         <p><%= error %></p>
       <% } %>
       <form method="POST" action="/login">
         <div class="form-group">
           <label for="email">Email:</label>
-          <input type="email" id="email" name="email" class="form-control" required>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">📧</span>
+            </div>
+            <input type="email" id="email" name="email" class="form-control" required>
+          </div>
         </div>
         <div class="form-group">
           <label for="password">Password:</label>
-          <input type="password" id="password" name="password" class="form-control" required>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">🔑</span>
+            </div>
+            <input type="password" id="password" name="password" class="form-control" required>
+          </div>
         </div>
-        <button type="submit" class="btn btn-primary">Login</button>
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary btn-sm w-100">Login</button> 
+        </div>
       </form>
     </div>
+    <p>Don't have an account? <a href="/register">Register now</a></p>
   </div>
+  
 </body>
 </html>

@@ -15,40 +15,62 @@
   <style>
     .container {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 50vh;
+      justify-content: center;
+      height: 70vh;
     }
     .form-container {
       width: 400px;
-      margin: 0 auto;
+      margin-bottom: 20px;
       padding: 20px;
       border: 1px solid #ccc;
       border-radius: 5px;
       background-color: #f9f9f9;
+    }
+    .welcome-text {
+      text-align: center;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
   <%- include('partials/_header') %>
   <div class="container">
+    <div class="welcome-text">
+      <h2>Welcome to Tiny APP! 👋 </h2>
+      <h3>Sign up and start shortening</h3>
+    </div>
     <div class="form-container">
-      <h1>Create Account</h1>
+      <h1 class="text-center">Create Account</h1>
       <% if (error) { %>
         <p><%= error %></p>
       <% } %>
       <form method="POST" action="/register">
         <div class="form-group">
           <label for="email">Email:</label>
-          <input type="email" id="email" name="email" class="form-control" required>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">📧</span>
+            </div>
+            <input type="email" id="email" name="email" class="form-control" required>
+          </div>
         </div>
         <div class="form-group">
           <label for="password">Password:</label>
-          <input type="password" id="password" name="password" class="form-control" required>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">🔑</span>
+            </div>
+            <input type="password" id="password" name="password" class="form-control" required>
+          </div>
         </div>
-        <button type="submit" class="btn btn-primary">Register</button>
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary btn-sm w-100">Register</button> <!-- Apply w-100 class -->
+        </div>
       </form>
     </div>
+    <p>Already have an account? <a href="/login">Log in</a></p>
   </div>
 </body>
 </html>

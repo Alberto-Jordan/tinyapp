@@ -80,7 +80,7 @@ app.get("/urls", (req, res) => {
 
   if (!user) {
     const templateVars = { 
-      error: "You need to be logged in to access this.", 
+      error: "❌You need to be logged in to access this.", 
       user: null,
     };
     res.render("login", templateVars);
@@ -112,7 +112,7 @@ app.get("/urls/new", (req, res) => {
 
   if (!user) {
     const templateVars = {
-      error: "You need to be logged in to create new URLs.",
+      error: "❌You need to be logged in to access this.",
       user: null,
     };
     res.render("login", templateVars);
@@ -213,7 +213,7 @@ app.post("/register", (req, res) => {
   if (user) {
     const templateVars = {
       user: null,
-      error: "Email already registered."  
+      error: "❌Email already registered."  
     };
     res.status(400).render("register", templateVars); 
   }
@@ -248,7 +248,7 @@ app.post("/login", (req, res) => {
   if (!user || !bcrypt.compareSync(password, user.password)) {
     const templateVars = {
       user: null,
-      error: "Invalid credentials"  
+      error: "❌Invalid credentials Please try again"  
     };
     res.status(403).render("login", templateVars); 
     return;
