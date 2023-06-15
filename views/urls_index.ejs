@@ -17,15 +17,17 @@
         <tr>
           <th>Short URL</th>
           <th>Long URL</th>
+          <th>Visits</th> <!-- Add column for visits -->
           <th>Edit</th>
           <th>Delete</th>
         </tr>
       </thead>
       <tbody>
-        <% for (const [shortURL, longURL] of Object.entries(urls)) { %>
+        <% for (const [shortURL, urlObj] of Object.entries(urls)) { %>
           <tr>
             <td><a href="/u/<%= shortURL %>"><%= shortURL %></a></td>
-            <td><%= longURL %></td>
+            <td><%= urlObj.longURL %></td>
+            <td><%= urlObj.visits %></td> 
             <td><a href="/urls/<%= shortURL %>" class="btn btn-danger">Edit</a></td>
             <td>
               <form method="POST" action="/urls/<%= shortURL %>/delete">

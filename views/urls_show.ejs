@@ -13,6 +13,10 @@
 
   <body>
     <%- include('partials/_header') %>
+    <h1>URL Details</h1>
+  <p>Long URL: <%= longURL %></p>
+  <p>Short URL: <%= id %></p>
+  <p>Visits: <%= visits || 0 %></p>
 
     <div class="card text-center">
       <div class="card-header"></div>

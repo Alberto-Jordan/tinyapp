@@ -34,8 +34,8 @@ app.use((req, res, next) => {
 });
 
 const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" , visits: 0 },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" , visits: 0}
 };
 
 function generateRandomString() {
@@ -79,7 +79,11 @@ app.get("/urls", (req, res) => {
   const user = getUserById(userId);
 
   if (!user) {
-    res.status(401).send("You need to be logged in to access this.");
+    const templateVars = { 
+      error: "You need to be logged in to access this.", 
+      user: null,
+    };
+    res.render("login", templateVars);
     return;
   }
 
@@ -89,6 +93,7 @@ app.get("/urls", (req, res) => {
     if (urlDatabase[urlId].userID === userId) {
       userUrls[urlId] = {
         longURL: urlDatabase[urlId].longURL,
+        visits: urlDatabase[urlId].visits || 0,
       };
     }
   }
@@ -106,7 +111,11 @@ app.get("/urls/new", (req, res) => {
   const user = getUserById(userId);
 
   if (!user) {
-    res.status(401).send("You need to be logged in to access this.");
+    const templateVars = {
+      error: "You need to be logged in to create new URLs.",
+      user: null,
+    };
+    res.render("login", templateVars);
     return;
   }
 
@@ -116,35 +125,29 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-app.get("/urls/:id", (req, res) => {
-  const id = req.params.id;
-  const longURL = urlDatabase[id] ? urlDatabase[id].longURL : null;
 
-  if (longURL) {
-    const templateVars = { id: id, longURL: longURL };
-    res.render("urls_show", templateVars);
-  } else {
-    res.status(404).send("URL not found");
-  }
-});
 
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = urlDatabase[shortURL];
 
   if (longURL) {
+    longURL.visits++;
     res.redirect(longURL.longURL);
   } else {
     res.status(404).send("URL not found");
   }
 });
 
-
 app.post("/urls", (req, res) => {
   const id = generateRandomString();
   const longURL = req.body.longURL;
   const userId = req.session.user_id;
-  urlDatabase[id] = { longURL: longURL, userID: userId };
+  urlDatabase[id] = { 
+    longURL: longURL, 
+    userID: userId, 
+    visits: 0, 
+  };
   res.redirect(`/urls/${id}`);
 });
 
@@ -155,15 +158,14 @@ app.get("/urls/:id", (req, res) => {
   if (url) {
     const templateVars = {
       id: id,
-      longURL: url.longURL, 
+      longURL: url.longURL,
+      visits: url.visits || 0, // Assign visits as 0 if not defined
     };
     res.render("urls_show", templateVars);
   } else {
     res.status(404).send("URL not found");
   }
 });
-
-
 
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
@@ -186,7 +188,11 @@ app.get("/register", (req, res) => {
   if (req.session.user_id) {
     res.redirect("/urls");
   } else {
-    res.render("register");
+    const templateVars = {
+      user: null,
+      error: null
+    };
+    res.render("register", templateVars);
   }
 });
 
@@ -194,15 +200,22 @@ app.post("/register", (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    res.status(400).send("Email and password fields cannot be empty.");
+    const templateVars = {
+      user: null,
+      error: "Email and password fields cannot be empty."  
+    };
+    res.status(400).render("register", templateVars); 
     return;
   }
 
-  const user = helpers.getUserByEmail(email, users);
+  const user = getUserByEmail(email, users);
 
   if (user) {
-    res.status(400).send("Email already registered.");
-    return;
+    const templateVars = {
+      user: null,
+      error: "Email already registered."  
+    };
+    res.status(400).render("register", templateVars); 
   }
 
   const id = generateRandomString();
@@ -221,16 +234,23 @@ app.get("/login", (req, res) => {
   if (req.session.user_id) {
     res.redirect("/urls");
   } else {
-    res.render("login");
+    const templateVars = {
+      user: null,
+      error: null
+    };
+    res.render("login", templateVars);
   }
 });
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  const user = helpers.getUserByEmail(email, users);
-
+  const user = getUserByEmail(email, users);
   if (!user || !bcrypt.compareSync(password, user.password)) {
-    res.status(403).send("Invalid credentials");
+    const templateVars = {
+      user: null,
+      error: "Invalid credentials"  
+    };
+    res.status(403).render("login", templateVars); 
     return;
   }
 
