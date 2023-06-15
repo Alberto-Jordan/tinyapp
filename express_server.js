@@ -159,7 +159,7 @@ app.get("/urls/:id", (req, res) => {
     const templateVars = {
       id: id,
       longURL: url.longURL,
-      visits: url.visits || 0, // Assign visits as 0 if not defined
+      visits: url.visits || 0, 
     };
     res.render("urls_show", templateVars);
   } else {
