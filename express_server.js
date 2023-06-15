@@ -125,8 +125,6 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-
-
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = urlDatabase[shortURL];
@@ -216,6 +214,7 @@ app.post("/register", (req, res) => {
       error: "❌Email already registered."  
     };
     res.status(400).render("register", templateVars); 
+    return;
   }
 
   const id = generateRandomString();
